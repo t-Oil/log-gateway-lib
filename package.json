@@ -1,0 +1,50 @@
+{
+  "name": "log-gateway-client",
+  "version": "2.0.0",
+  "description": "TypeScript log gateway client library for centralized logging with Loki and Grafana",
+  "main": "dist/client.js",
+  "types": "dist/client.d.ts",
+  "source": "lib/client.ts",
+  "files": [
+    "dist/**/*",
+    "lib/**/*",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "logging",
+    "loki",
+    "grafana",
+    "centralized-logging",
+    "typescript",
+    "client",
+    "observability",
+    "logs",
+    "monitoring",
+    "nestjs"
+  ],
+  "author": "t-Oil <https://github.com/t-Oil>",
+  "license": "MIT",
+  "homepage": "https://github.com/t-Oil/log-gateway-lib#readme",
+  "bugs": {
+    "url": "https://github.com/t-Oil/log-gateway-lib/issues"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "prepare": "npm run build"
+  },
+  "dependencies": {
+    "@types/node": "^20.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/t-Oil/log-gateway-lib.git"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
