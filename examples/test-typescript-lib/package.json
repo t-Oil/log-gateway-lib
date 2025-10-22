@@ -1,0 +1,17 @@
+{
+  "name": "test-typescript-lib",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Test example for log-gateway-client",
+  "main": "index.ts",
+  "scripts": {
+    "start": "ts-node index.ts"
+  },
+  "dependencies": {
+    "log-gateway-client": "file:../.."
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.2",
+    "typescript": "^5.0.0"
+  }
+}

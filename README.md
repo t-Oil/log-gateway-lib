@@ -38,7 +38,7 @@ pnpm add log-gateway-client
 import { configure, log } from 'log-gateway-client';
 
 // Configure once at application startup
-configure('http://localhost:8080', 'my-app-id');
+configure('http://localhost:8080', 'my-app-id', 'your-bearer-token');
 
 // Use anywhere in your application
 await log.info({
@@ -65,7 +65,7 @@ await log.error({
 ```typescript
 import { createClient } from 'log-gateway-client';
 
-const logger = createClient('http://localhost:8080', 'my-app-id');
+const logger = createClient('http://localhost:8080', 'my-app-id', 'your-bearer-token');
 
 await logger.info({
   msg: "Service started",
@@ -85,7 +85,11 @@ import { configure } from 'log-gateway-client';
 })
 export class AppModule implements OnModuleInit {
   onModuleInit() {
-    configure(process.env.LOG_GATEWAY_URL, process.env.APP_ID);
+    configure(
+      process.env.LOG_GATEWAY_URL,
+      process.env.APP_ID,
+      process.env.BEARER_TOKEN
+    );
   }
 }
 
@@ -129,7 +133,8 @@ export class LoggerService {
   constructor() {
     this.logger = createClient(
       process.env.LOG_GATEWAY_URL,
-      process.env.APP_ID
+      process.env.APP_ID,
+      process.env.BEARER_TOKEN
     );
   }
 
@@ -149,12 +154,13 @@ export class LoggerService {
 
 ### Configuration
 
-#### `configure(endpoint: string, appId: string): LogGatewayClient`
+#### `configure(endpoint: string, appId: string, bearerToken: string): LogGatewayClient`
 
 Configure the global logger instance.
 
 - `endpoint`: URL of your log gateway (e.g., 'http://localhost:8080')
 - `appId`: Your application identifier
+- `bearerToken`: Bearer token for SSO authentication
 
 ### Logging Methods
 
@@ -165,29 +171,9 @@ Configure the global logger instance.
 
 Send logs with the specified level.
 
-#### `log.batch(logs: BatchLogPayload[]): Promise<LogResponse>`
-
-Send multiple logs in a single request for better performance.
-
-```typescript
-await log.batch([
-  {
-    level: 'info',
-    msg: "Operation started",
-    operationId: "op-123"
-  },
-  {
-    level: 'info',
-    msg: "Operation completed",
-    operationId: "op-123",
-    duration: 1500
-  }
-]);
-```
-
 ### Client Factory
 
-#### `createClient(endpoint: string, appId: string): LogGatewayClient`
+#### `createClient(endpoint: string, appId: string, bearerToken: string): LogGatewayClient`
 
 Create a new client instance for dependency injection or multiple configurations.
 
@@ -249,7 +235,11 @@ await log.warning({
 
 ```typescript
 class PaymentService {
-  private logger = createClient(process.env.LOG_GATEWAY_URL, 'payment-service');
+  private logger = createClient(
+    process.env.LOG_GATEWAY_URL,
+    'payment-service',
+    process.env.BEARER_TOKEN
+  );
 
   async processPayment(paymentData: PaymentDto) {
     await this.logger.info({
