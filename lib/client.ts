@@ -16,23 +16,11 @@ export interface LogPayload {
   [key: string]: any;
 }
 
-export interface BatchLogPayload extends LogPayload {
-  /** Log level for batch logs */
-  level: 'info' | 'warn' | 'error' | 'debug';
-}
-
 export interface LogResponse {
   /** Success status */
   success: boolean;
   /** Number of logs ingested */
   ingested: number;
-}
-
-export interface HealthResponse {
-  /** Gateway status */
-  status: string;
-  /** Response timestamp */
-  timestamp: string;
 }
 
 type LogLevel = 'info' | 'warn' | 'error' | 'debug';
@@ -43,19 +31,18 @@ type LogLevel = 'info' | 'warn' | 'error' | 'debug';
  */
 export class LogGatewayClient {
   private readonly endpoint: string;
-  private readonly appId: string;
   private readonly headers: Record<string, string>;
 
-  constructor(endpoint: string, appId: string) {
-    if (!endpoint || !appId) {
-      throw new Error('LogGatewayClient requires endpoint and appId');
+  constructor(endpoint: string, appId: string, bearerToken: string) {
+    if (!endpoint || !appId || !bearerToken) {
+      throw new Error('LogGatewayClient requires endpoint, appId, and bearerToken');
     }
 
     this.endpoint = endpoint.replace(/\/$/, ''); // Remove trailing slash
-    this.appId = appId;
     this.headers = {
       'X-App-Id': appId,
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${bearerToken}`
     };
   }
 
@@ -167,58 +154,16 @@ export class LogGatewayClient {
     return this._sendLog('debug', payload);
   }
 
-  /**
-   * Send multiple logs at once
-   * @param logs Array of log objects with level, msg, and custom fields
-   */
-  public async batch(logs: BatchLogPayload[]): Promise<LogResponse> {
-    if (!Array.isArray(logs)) {
-      throw new Error('Batch logs must be an array');
-    }
-
-    const processedLogs = logs.map(log => ({
-      timestamp: new Date().toISOString(),
-      ...log
-    }));
-
-    try {
-      const response = await this._httpRequest<LogResponse>(
-        `${this.endpoint}/logs`,
-        'POST',
-        processedLogs,
-        this.headers
-      );
-      return response;
-    } catch (error: any) {
-      throw new Error(`Failed to send batch logs: ${error.message}`);
-    }
-  }
-
-  /**
-   * Test connection to the gateway
-   */
-  public async testConnection(): Promise<HealthResponse> {
-    try {
-      const response = await this._httpRequest<HealthResponse>(
-        `${this.endpoint}/health`,
-        'GET',
-        null,
-        { 'Content-Type': 'application/json' }
-      );
-      return response;
-    } catch (error: any) {
-      throw new Error(`Gateway connection failed: ${error.message}`);
-    }
-  }
 }
 
 /**
  * Factory function to create a new LogGatewayClient instance
  * @param endpoint Gateway URL (e.g., 'http://localhost:8080')
  * @param appId Application ID for authentication
+ * @param bearerToken Bearer token for SSO authentication
  */
-export function createClient(endpoint: string, appId: string): LogGatewayClient {
-  return new LogGatewayClient(endpoint, appId);
+export function createClient(endpoint: string, appId: string, bearerToken: string): LogGatewayClient {
+  return new LogGatewayClient(endpoint, appId, bearerToken);
 }
 
 // Global logger instance - can be configured once
@@ -228,9 +173,10 @@ let globalLogger: LogGatewayClient | null = null;
  * Configure the global logger instance
  * @param endpoint Gateway URL
  * @param appId Application ID
+ * @param bearerToken Bearer token for SSO authentication
  */
-export function configure(endpoint: string, appId: string): LogGatewayClient {
-  globalLogger = createClient(endpoint, appId);
+export function configure(endpoint: string, appId: string, bearerToken: string): LogGatewayClient {
+  globalLogger = createClient(endpoint, appId, bearerToken);
   return globalLogger;
 }
 
@@ -253,10 +199,6 @@ export const log = {
   debug: (payload: LogPayload): Promise<LogResponse> => {
     if (!globalLogger) throw new Error('Logger not configured. Call configure(endpoint, appId) first.');
     return globalLogger.debug(payload);
-  },
-  batch: (logs: BatchLogPayload[]): Promise<LogResponse> => {
-    if (!globalLogger) throw new Error('Logger not configured. Call configure(endpoint, appId) first.');
-    return globalLogger.batch(logs);
   }
 };
 

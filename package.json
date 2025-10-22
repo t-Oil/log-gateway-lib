@@ -1,6 +1,6 @@
 {
   "name": "log-gateway-client",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "TypeScript log gateway client library for centralized logging with Loki and Grafana",
   "main": "dist/client.js",
   "types": "dist/client.d.ts",
@@ -32,7 +32,8 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "test-lib": "cd examples/test-typescript-lib && npm install && npm start"
   },
   "dependencies": {
     "@types/node": "^20.0.0"
